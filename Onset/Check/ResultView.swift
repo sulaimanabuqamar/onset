@@ -127,6 +127,9 @@ struct ResultView: View {
 
     private var faceDetail: String {
         guard let f = record.face else { return "Not tested" }
+        if f.leftSmile + f.rightSmile == 1 && (f.smileAsymmetry == 1 || f.smileAsymmetry == 0) {
+            return f.smileAsymmetry == 1 ? "Judged by eye: one side droops" : "Judged by eye: looks even"
+        }
         var s = "Smile \(Int((1 - f.smileAsymmetry) * 100))% even"
         if let b = profile?.baseline { s += " (normal: \(Int((1 - b.face.smileAsymmetry) * 100))%)" }
         return s
@@ -139,6 +142,7 @@ struct ResultView: View {
 
     private var speechDetail: String {
         guard let s = record.speech else { return "Not tested" }
+        if s.transcript == "(judged by ear)" { return s.wordAccuracy < 0.5 ? "Judged by ear: slurred" : "Judged by ear: clear" }
         return "\(Int(s.wordAccuracy * 100))% of words clear — heard “\(s.transcript)”"
     }
 
