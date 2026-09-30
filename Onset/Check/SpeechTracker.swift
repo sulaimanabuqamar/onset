@@ -19,7 +19,7 @@ final class SpeechTracker: ObservableObject {
 
     func requestPermissions(_ done: @escaping (Bool) -> Void) {
         SFSpeechRecognizer.requestAuthorization { status in
-            AVAudioSession.sharedInstance().requestRecordPermission { mic in
+            AVAudioApplication.requestRecordPermission { mic in
                 DispatchQueue.main.async {
                     let ok = status == .authorized && mic
                     self.permissionDenied = !ok

@@ -57,6 +57,7 @@ struct CallNowPill: View {
         if let url = EmergencyNumber.url {
             Link(destination: url) {
                 Label("Call \(EmergencyNumber.current)", systemImage: "phone.fill")
+                    .labelStyle(.titleAndIcon)
                     .font(.subheadline.weight(.bold))
                     .padding(.horizontal, 14).padding(.vertical, 8)
                     .foregroundStyle(.white)

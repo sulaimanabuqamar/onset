@@ -37,6 +37,20 @@ struct PaywallView: View {
 
                     packages
 
+                    Button("Restore purchases") { Task { await purchases.restore() } }
+                        .font(.footnote)
+
+                    if let err = purchases.lastError {
+                        Text(err).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    }
+                }
+                .padding()
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Not now") { dismiss() } }
+            }
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 6) {
                     if purchases.isFamily {
                         Label("Family is active — thank you", systemImage: "checkmark.circle.fill")
                             .font(.headline).foregroundStyle(Theme.green)
@@ -52,18 +66,10 @@ struct PaywallView: View {
                         }
                         .disabled(purchases.isLoading || purchases.offering == nil)
                     }
-
-                    Button("Restore purchases") { Task { await purchases.restore() } }
-                        .font(.footnote)
-
-                    if let err = purchases.lastError {
-                        Text(err).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                    }
                 }
-                .padding()
-            }
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Not now") { dismiss() } }
+                .padding(.horizontal)
+                .padding(.top, 10)
+                .background(.bar)
             }
             .task {
                 if purchases.offering == nil { await purchases.refresh() }
