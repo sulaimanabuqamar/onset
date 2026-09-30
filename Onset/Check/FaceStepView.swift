@@ -91,7 +91,7 @@ struct FaceStepView: View {
                     onDone(FaceMeasurement(smileAsymmetry: 1, restAsymmetry: 1, leftSmile: 0, rightSmile: 1))
                 }
                 PrimaryButton(title: "Looks even", color: Theme.green) {
-                    onDone(FaceMeasurement(smileAsymmetry: 0, restAsymmetry: 0, leftSmile: 1, rightSmile: 1))
+                    onDone(FaceMeasurement(smileAsymmetry: 0, restAsymmetry: 0, leftSmile: 0.5, rightSmile: 0.5))
                 }
             }
         default:

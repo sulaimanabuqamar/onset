@@ -127,7 +127,7 @@ struct ResultView: View {
 
     private var faceDetail: String {
         guard let f = record.face else { return "Not tested" }
-        if f.leftSmile + f.rightSmile == 1 && (f.smileAsymmetry == 1 || f.smileAsymmetry == 0) {
+        if f.judgedByEye {
             return f.smileAsymmetry == 1 ? "Judged by eye: one side droops" : "Judged by eye: looks even"
         }
         var s = "Smile \(Int((1 - f.smileAsymmetry) * 100))% even"
@@ -190,7 +190,7 @@ struct ParamedicCardView: View {
                     }
 
                     block("FINDINGS (checked \(record.date.clock))") {
-                        line("Face", record.faceFinding, record.face.map { $0.leftSmile + $0.rightSmile == 1 ? "judged by eye" : "smile \(Int((1 - $0.smileAsymmetry) * 100))% even" })
+                        line("Face", record.faceFinding, record.face.map { $0.judgedByEye ? "judged by eye" : "smile \(Int((1 - $0.smileAsymmetry) * 100))% even" })
                         line("Arms", record.armFinding, record.arm.map { String(format: "drift L %.0f° / R %.0f°", $0.leftDrift, $0.rightDrift) })
                         line("Speech", record.speechFinding, record.speech.map { "\(Int($0.wordAccuracy * 100))% words clear" })
                         ForEach(record.otherSigns.list, id: \.self) { Text("• \($0)").font(.headline) }

@@ -45,6 +45,8 @@ struct FaceMeasurement: Codable, Hashable {
 
     /// The side that moves less (the side the person would call "their" left/right).
     var weakerSide: String { leftSmile < rightSmile ? "left" : "right" }
+    /// True when there was no TrueDepth camera and the person judged the face by eye.
+    var judgedByEye: Bool { leftSmile + rightSmile == 1 && (smileAsymmetry == 0 || smileAsymmetry == 1) }
 }
 
 struct ArmMeasurement: Codable, Hashable {
