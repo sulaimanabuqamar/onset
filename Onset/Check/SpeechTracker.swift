@@ -82,7 +82,9 @@ final class SpeechTracker: ObservableObject {
         // Give the recogniser a moment to deliver its final result.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             self.stopEngine()
-            let text = self.lastResult?.bestTranscription.formattedString ?? self.transcript
+            // A cancelled task can deliver an empty final result; keep the most complete transcript.
+            let finalText = self.lastResult?.bestTranscription.formattedString ?? ""
+            let text = finalText.count >= self.transcript.count ? finalText : self.transcript
             let segments = self.lastResult?.bestTranscription.segments ?? []
             let confidences = segments.map { Double($0.confidence) }.filter { $0 > 0 }
             let clarity = confidences.isEmpty ? 0.8 : confidences.average
