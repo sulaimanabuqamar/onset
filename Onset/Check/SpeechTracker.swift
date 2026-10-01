@@ -16,6 +16,7 @@ final class SpeechTracker: ObservableObject {
     private let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
     private var startedAt: Date?
     private var lastResult: SFSpeechRecognitionResult?
+    private var tapInstalled = false
 
     func requestPermissions(_ done: @escaping (Bool) -> Void) {
         SFSpeechRecognizer.requestAuthorization { status in
@@ -31,7 +32,7 @@ final class SpeechTracker: ObservableObject {
 
     func start() {
         guard let recognizer, recognizer.isAvailable else { permissionDenied = true; return }
-        stopEngine()
+        if tapInstalled || engine.isRunning { stopEngine() }
         transcript = ""
         lastResult = nil
 
@@ -47,7 +48,8 @@ final class SpeechTracker: ObservableObject {
 
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
-        input.removeTap(onBus: 0)
+        // No usable microphone input (e.g. another app holds it): fall back to judging by ear.
+        guard format.sampleRate > 0, format.channelCount > 0 else { permissionDenied = true; return }
         input.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
             self?.request?.append(buffer)
             guard let channel = buffer.floatChannelData?[0] else { return }
@@ -58,6 +60,7 @@ final class SpeechTracker: ObservableObject {
             DispatchQueue.main.async { self?.level = min(1, Double(rms) * 12) }
         }
 
+        tapInstalled = true
         engine.prepare()
         do { try engine.start() } catch { permissionDenied = true; return }
         startedAt = Date()
@@ -94,7 +97,7 @@ final class SpeechTracker: ObservableObject {
 
     private func stopEngine() {
         if engine.isRunning { engine.stop() }
-        engine.inputNode.removeTap(onBus: 0)
+        if tapInstalled { engine.inputNode.removeTap(onBus: 0); tapInstalled = false }
         task?.cancel()
         task = nil
         request = nil

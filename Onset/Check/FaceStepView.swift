@@ -16,7 +16,7 @@ struct FaceStepView: View {
             StepHeader(letter: "F", title: "Face", subtitle: "Is one side of the face drooping?")
 
             ZStack {
-                if FaceTracker.isSupported {
+                if FaceTracker.isSupported && !tracker.failed {
                     FaceMeshView(tracker: tracker)
                         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                 } else {
@@ -60,6 +60,9 @@ struct FaceStepView: View {
             }
         }
         .onDisappear { tracker.stop() }
+        .onChange(of: tracker.failed) { _, failed in
+            if failed && phase == .findFace { phase = .unsupported }
+        }
         .onChange(of: tracker.faceVisible) { _, visible in
             if visible && phase == .findFace { Task { await run() } }
         }
@@ -77,7 +80,7 @@ struct FaceStepView: View {
         case .done:
             Label("Face measured", systemImage: "checkmark.circle.fill").foregroundStyle(Theme.green)
         case .unsupported:
-            Text("This iPhone has no TrueDepth camera. Ask them to smile and look: does one side of the mouth droop?")
+            Text(tracker.failed ? "The face camera isn't available. Ask them to smile and look: does one side of the mouth droop?" : "This iPhone has no TrueDepth camera. Ask them to smile and look: does one side of the mouth droop?")
         }
     }
 

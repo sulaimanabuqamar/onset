@@ -1,4 +1,5 @@
 import ARKit
+import AVFoundation
 import SceneKit
 import SwiftUI
 
@@ -15,6 +16,8 @@ final class FaceTracker: NSObject, ObservableObject, ARSCNViewDelegate {
     }
 
     @Published var faceVisible = false
+    /// True when the camera can't be used (permission refused or ARKit failed).
+    @Published var failed = false
     @Published var latest = Sample(smileLeft: 0, smileRight: 0, frownLeft: 0, frownRight: 0, stretchLeft: 0, stretchRight: 0)
 
     let sceneView = ARSCNView(frame: .zero)
@@ -33,9 +36,18 @@ final class FaceTracker: NSObject, ObservableObject, ARSCNViewDelegate {
 
     func start() {
         guard Self.isSupported else { return }
-        let config = ARFaceTrackingConfiguration()
-        config.isLightEstimationEnabled = true
-        sceneView.session.run(config, options: [.resetTracking, .removeExistingAnchors])
+        AVCaptureDevice.requestAccess(for: .video) { granted in
+            DispatchQueue.main.async {
+                guard granted else { self.failed = true; return }
+                let config = ARFaceTrackingConfiguration()
+                config.isLightEstimationEnabled = true
+                self.sceneView.session.run(config, options: [.resetTracking, .removeExistingAnchors])
+            }
+        }
+    }
+
+    func session(_ session: ARSession, didFailWithError error: Error) {
+        DispatchQueue.main.async { self.failed = true }
     }
 
     func stop() {
